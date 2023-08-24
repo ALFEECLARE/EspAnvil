@@ -1,4 +1,16 @@
 {
   "clane.mod.espAnvil.anvilUseCount": "金床使用回数 : %s回",
-  "clane.mod.espAnvil.itemDurability": "耐久値 : %s / %s"
+  "clane.mod.espAnvil.itemDurability": "耐久値 : %s / %s",
+  "clane.mod.espAnvil.nutrition": "満腹度 : ",
+  "clane.mod.espAnvil.saturation": "隠し満腹度 : ",
+  "clane.mod.espAnvil.hungerValueAdd": "+%s",
+  "clane.mod.espAnvil.hungerValue.BeforeAfter": "(%s => %s)",
+  "clane.mod.espAnvil.food.fastfood": "早食い",
+  "clane.mod.espAnvil.food.alwayseat": "別腹",
+  "clane.mod.espAnvil.food.optionSeparater": "・",
+  "clane.mod.espAnvil.block.lightLevel": "光源レベル : %s",
+  "clane.mod.espAnvil.block.destroyTime": "硬度 : %s",
+  "clane.mod.espAnvil.block.instantBreak": "即時破壊",
+  "clane.mod.espAnvil.block.unbreakable": "破壊不能",
+  "clane.mod.espAnvil.block.explosionResistance": "爆発耐性 : %s"
 }
