@@ -1,5 +1,6 @@
 package jp.ne.clane.espAnvil;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +33,7 @@ public class EspAnvilMain {
 
 	private static EspAnvilMain instance;
 
-	//private EspAnvilConfig config;
+	private EspAnvilConfig config;
 
 	private static void log(String message) {
 		log.info("[{}] {}", log.getName(), message);
@@ -74,53 +75,84 @@ public class EspAnvilMain {
 		ItemStack items = ev.getItemStack();
 		List<Component> tooltip = ev.getToolTip();
 		if (items.isRepairable() || !EnchantedBookItem.getEnchantments(items).isEmpty()) {
-			tooltip.add(Component.translatable("clane.mod.espAnvil.anvilUseCount", Math.round(Math.log(items.getBaseRepairCost() + 1) / Math.log(2))));
-			if (!ev.getFlags().isAdvanced() && items.isRepairable()) {
+			if (EspAnvilConfig.isShowAnvilCount) {
+				tooltip.add(Component.translatable("clane.mod.espAnvil.anvilUseCount", Math.round(Math.log(items.getBaseRepairCost() + 1) / Math.log(2))));
+			}
+			if (EspAnvilConfig.isShowItemDurability && !ev.getFlags().isAdvanced() && items.isRepairable()) {
 				tooltip.add(Component.translatable("clane.mod.espAnvil.itemDurability", items.getMaxDamage() - items.getDamageValue(), items.getMaxDamage()));
 			}
 		} else if (items.isEdible()) {
 			FoodProperties foodProp = items.getFoodProperties(null);
 			FoodData currentFoodData = mcInst.player.getFoodData();
-			MutableComponent addCompNut = Component.translatable("clane.mod.espAnvil.nutrition");
 			int afterNutrationLevel = Math.min(20, currentFoodData.getFoodLevel() + foodProp.getNutrition());
-			addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",foodProp.getNutrition()));
-			addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValue.BeforeAfter", currentFoodData.getFoodLevel(), afterNutrationLevel));
-			tooltip.add(addCompNut);
-			Float addSaturationValue = (float)foodProp.getNutrition() * foodProp.getSaturationModifier() * 2.0F;
-			MutableComponent addCompSat = Component.translatable("clane.mod.espAnvil.saturation");
-			addCompSat.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",String.format("%.1f",addSaturationValue)));
-			addCompSat.append(Component.translatable("clane.mod.espAnvil.hungerValue.BeforeAfter", String.format("%.1f",currentFoodData.getSaturationLevel()), String.format("%.1f",Math.min(afterNutrationLevel, currentFoodData.getSaturationLevel() + addSaturationValue))));
-			tooltip.add(addCompSat);
-			StringBuilder optionValue = new StringBuilder();
-			String optionSeparater = Component.translatable("clane.mod.espAnvil.food.optionSeparater").getString();
-			if (foodProp.isFastFood()) {
-				optionValue.append(Component.translatable("clane.mod.espAnvil.food.fastfood").getString()).append(optionSeparater);
+			if (EspAnvilConfig.isShowNutrition) {
+				MutableComponent addCompNut = Component.translatable("clane.mod.espAnvil.nutrition");
+				addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",foodProp.getNutrition()));
+				if (EspAnvilConfig.isShowNutritionBeforeAfter) {
+					addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValue.BeforeAfter", currentFoodData.getFoodLevel(), afterNutrationLevel));
+				}
+				tooltip.add(addCompNut);
 			}
-			if (foodProp.canAlwaysEat()) {
-				optionValue.append(Component.translatable("clane.mod.espAnvil.food.alwayseat").getString()).append(optionSeparater);
+			if (EspAnvilConfig.isShowSaturation) {
+				Float addSaturationValue = (float)foodProp.getNutrition() * foodProp.getSaturationModifier() * 2.0F;
+				MutableComponent addCompSat = Component.translatable("clane.mod.espAnvil.saturation");
+				addCompSat.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",String.format("%.1f",addSaturationValue)));
+				if (EspAnvilConfig.isShowSaturationBeforeAfter) {
+					addCompSat.append(Component.translatable("clane.mod.espAnvil.hungerValue.BeforeAfter", String.format("%.1f",currentFoodData.getSaturationLevel()), String.format("%.1f",Math.min(afterNutrationLevel, currentFoodData.getSaturationLevel() + addSaturationValue))));
+				}
+				tooltip.add(addCompSat);
 			}
-			if (optionValue.length() > 0) {
-				tooltip.add(Component.literal(optionValue.delete(optionValue.length() - optionSeparater.length(), optionValue.length()).toString()));
+			if (EspAnvilConfig.isShowFoodExtraInfo) {
+				StringBuilder optionValue = new StringBuilder();
+				String optionSeparater = Component.translatable("clane.mod.espAnvil.food.optionSeparater").getString();
+				if (foodProp.isFastFood()) {
+					optionValue.append(Component.translatable("clane.mod.espAnvil.food.fastfood").getString()).append(optionSeparater);
+				}
+				if (foodProp.canAlwaysEat()) {
+					optionValue.append(Component.translatable("clane.mod.espAnvil.food.alwayseat").getString()).append(optionSeparater);
+				}
+				if (optionValue.length() > 0) {
+					tooltip.add(Component.literal(optionValue.delete(optionValue.length() - optionSeparater.length(), optionValue.length()).toString()));
+				}
 			}
 		} else if (items.getItem() instanceof BlockItem) {
 			Block block = ((BlockItem)items.getItem()).getBlock();;
-			float destroyTime = block.defaultDestroyTime();
-			float explosionResistance = block.getExplosionResistance(block.defaultBlockState(), null, null, null);
-			tooltip.add(Component.translatable("clane.mod.espAnvil.block.destroyTime", destroyTime == 0 ? Component.translatable("clane.mod.espAnvil.block.instantBreak") : destroyTime == -1 ? Component.translatable("clane.mod.espAnvil.block.unbreakable") : String.format("%.1f",destroyTime)));
-			tooltip.add(Component.translatable("clane.mod.espAnvil.block.explosionResistance", String.format("%.1f",explosionResistance)));
-			int lightLevel = block.getLightEmission(block.defaultBlockState(), mcInst.level, null);
-			if (lightLevel > 0) {
-				tooltip.add(Component.translatable("clane.mod.espAnvil.block.lightLevel", lightLevel));
+			if (EspAnvilConfig.isShowBlockDestroyTime) {
+				float destroyTime = block.defaultDestroyTime();
+				tooltip.add(Component.translatable("clane.mod.espAnvil.block.destroyTime", destroyTime == 0 ? Component.translatable("clane.mod.espAnvil.block.instantBreak") : destroyTime == -1 ? Component.translatable("clane.mod.espAnvil.block.unbreakable") : String.format("%.1f",destroyTime)));
+			}
+			if (EspAnvilConfig.isShowExplosionResistance) {
+				float explosionResistance = block.getExplosionResistance(block.defaultBlockState(), null, null, null);
+				tooltip.add(Component.translatable("clane.mod.espAnvil.block.explosionResistance", String.format("%.1f",explosionResistance)));
+			}
+			if (EspAnvilConfig.isShowLightLevel) {
+				int lightLevel = block.getLightEmission(block.defaultBlockState(), mcInst.level, null);
+				if (lightLevel > 0) {
+					tooltip.add(Component.translatable("clane.mod.espAnvil.block.lightLevel", lightLevel));
+				}
 			}
 		}
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {
+		config = new EspAnvilConfig();
+		try {
+			config.loadConfig(EspAnvilConfig.getConfigFile());
+		} catch (IllegalAccessException | IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+		try {
+			config.saveConfig(EspAnvilConfig.getConfigFile());
+		} catch (IllegalAccessException | IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
 		log("espAnvil Init");
 	}
 	
 	private Minecraft getMC() {
-		if (mc == null) {
+		if (mc == null) {	
 			try {
 				mc = Minecraft.getInstance();
 			} catch (IllegalStateException e) {
@@ -129,4 +161,6 @@ public class EspAnvilMain {
 		}
 		return mc;
 	}
+	
+	
 }
