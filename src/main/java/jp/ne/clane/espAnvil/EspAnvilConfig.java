@@ -12,6 +12,7 @@ public class EspAnvilConfig extends ConfigBase {
 	  public static boolean isShowFoodExtraInfo = true;
 	  public static boolean isShowBlockDestroyTime = true;
 	  public static boolean isShowExplosionResistance = true;
+	  public static boolean isShowCorrectTool = true;
 	  public static boolean isShowLightLevel = true;
 	  
 	  public EspAnvilConfig() {

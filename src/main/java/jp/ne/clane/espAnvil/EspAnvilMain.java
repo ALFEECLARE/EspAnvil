@@ -7,21 +7,26 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.food.FoodProperties.PossibleEffect;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 @Mod(EspAnvilMain.MOD_ID)
 public class EspAnvilMain {
@@ -53,12 +58,12 @@ public class EspAnvilMain {
 		return this;
 	}
 
-	public EspAnvilMain() {
+	public EspAnvilMain(IEventBus modEventBus, ModContainer modContainer) {
 		instance = this;
-		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+		IEventBus bus = modEventBus;
 		bus.addListener(this::setup);
 
-		MinecraftForge.EVENT_BUS.register(this);
+		NeoForge.EVENT_BUS.register(this);
 		log("espAnvil Started");
 	}
 
@@ -74,27 +79,27 @@ public class EspAnvilMain {
 		Minecraft mcInst = getMC();
 		ItemStack items = ev.getItemStack();
 		List<Component> tooltip = ev.getToolTip();
-		if (items.isRepairable() || !EnchantedBookItem.getEnchantments(items).isEmpty()) {
+		if (items.isRepairable() || (items.getComponents().get(DataComponents.STORED_ENCHANTMENTS) != null)) {
 			if (EspAnvilConfig.isShowAnvilCount) {
-				tooltip.add(Component.translatable("clane.mod.espAnvil.anvilUseCount", Math.round(Math.log(items.getBaseRepairCost() + 1) / Math.log(2))));
+				tooltip.add(Component.translatable("clane.mod.espAnvil.anvilUseCount", Math.round(Math.log(items.getOrDefault(DataComponents.REPAIR_COST, Integer.valueOf(0)) + 1) / Math.log(2))));
 			}
 			if (EspAnvilConfig.isShowItemDurability && !ev.getFlags().isAdvanced() && items.isRepairable()) {
 				tooltip.add(Component.translatable("clane.mod.espAnvil.itemDurability", items.getMaxDamage() - items.getDamageValue(), items.getMaxDamage()));
 			}
-		} else if (items.isEdible()) {
+		} else if (items.getFoodProperties(null) != null) {
 			FoodProperties foodProp = items.getFoodProperties(null);
 			FoodData currentFoodData = mcInst.player.getFoodData();
-			int afterNutrationLevel = Math.min(20, currentFoodData.getFoodLevel() + foodProp.getNutrition());
+			int afterNutrationLevel = Math.min(20, currentFoodData.getFoodLevel() + foodProp.nutrition());
 			if (EspAnvilConfig.isShowNutrition) {
 				MutableComponent addCompNut = Component.translatable("clane.mod.espAnvil.nutrition");
-				addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",foodProp.getNutrition()));
+				addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",foodProp.nutrition()));
 				if (EspAnvilConfig.isShowNutritionBeforeAfter) {
 					addCompNut.append(Component.translatable("clane.mod.espAnvil.hungerValue.BeforeAfter", currentFoodData.getFoodLevel(), afterNutrationLevel));
 				}
 				tooltip.add(addCompNut);
 			}
 			if (EspAnvilConfig.isShowSaturation) {
-				Float addSaturationValue = (float)foodProp.getNutrition() * foodProp.getSaturationModifier() * 2.0F;
+				Float addSaturationValue = (float)foodProp.saturation();
 				MutableComponent addCompSat = Component.translatable("clane.mod.espAnvil.saturation");
 				addCompSat.append(Component.translatable("clane.mod.espAnvil.hungerValueAdd",String.format("%.1f",addSaturationValue)));
 				if (EspAnvilConfig.isShowSaturationBeforeAfter) {
@@ -105,11 +110,24 @@ public class EspAnvilMain {
 			if (EspAnvilConfig.isShowFoodExtraInfo) {
 				StringBuilder optionValue = new StringBuilder();
 				String optionSeparater = Component.translatable("clane.mod.espAnvil.food.optionSeparater").getString();
-				if (foodProp.isFastFood()) {
+				float eatSeconds = items.getItem().getUseDuration(items, null); //ハチミツ入りの瓶がitemクラスの上書きで実装されている
+				if (eatSeconds < 32) {
 					optionValue.append(Component.translatable("clane.mod.espAnvil.food.fastfood").getString()).append(optionSeparater);
+				} else if (eatSeconds > 32) {
+					optionValue.append(Component.translatable("clane.mod.espAnvil.food.slowfood").getString()).append(optionSeparater);
 				}
 				if (foodProp.canAlwaysEat()) {
 					optionValue.append(Component.translatable("clane.mod.espAnvil.food.alwayseat").getString()).append(optionSeparater);
+				}
+				for ( PossibleEffect effect : foodProp.effects() ) {
+					MobEffectInstance effectIns = effect.effect();
+					int duratationSecond = effectIns.getDuration() / 20;
+					optionValue.append(effectIns.getEffect().value().getDisplayName().getString()).append(effectIns.getAmplifier() > 0 ? Component.translatable("enchantment.level." + (effectIns.getAmplifier() + 1)).getString() : "")
+						.append("(").append(String.format("%01d:%02d",(int)duratationSecond / 60,(int)duratationSecond % 60));
+					if (effect.probability() != 1.0f) {
+						optionValue.append(" - ").append(String.valueOf(Math.round(effect.probability() * 100))).append("%");
+					}
+					optionValue.append(")").append(optionSeparater);
 				}
 				if (optionValue.length() > 0) {
 					tooltip.add(Component.literal(optionValue.delete(optionValue.length() - optionSeparater.length(), optionValue.length()).toString()));
@@ -131,6 +149,40 @@ public class EspAnvilMain {
 					tooltip.add(Component.translatable("clane.mod.espAnvil.block.lightLevel", lightLevel));
 				}
 			}
+			if (EspAnvilConfig.isShowCorrectTool) {
+				BlockState state = block.defaultBlockState();
+				TagKey<Block> tier = filterBlockTag(state, BlockTags.NEEDS_DIAMOND_TOOL, BlockTags.NEEDS_IRON_TOOL, BlockTags.NEEDS_STONE_TOOL);
+				TagKey<Block> tool = filterBlockTag(state, BlockTags.MINEABLE_WITH_PICKAXE, BlockTags.MINEABLE_WITH_AXE, BlockTags.MINEABLE_WITH_SHOVEL, BlockTags.MINEABLE_WITH_HOE, BlockTags.SWORD_EFFICIENT);
+				StringBuilder optionValue = new StringBuilder();
+				optionValue.append(Component.translatable("clane.mod.espAnvil.block.requiredTool",Component.translatable("clane.mod.espAnvil.block.requiredTool." + convertNameFromBlockTagKey(tool)).getString()).getString());
+				if (tier != null) {
+					optionValue.append(Component.translatable("clane.mod.espAnvil.block.requiredTier",Component.translatable("clane.mod.espAnvil.block.requiredTier." + convertNameFromBlockTagKey(tier)).getString()).getString());
+				}
+				tooltip.add(Component.literal(optionValue.toString()));
+			}
+		}
+	}
+	
+	@SafeVarargs
+	private TagKey<Block> filterBlockTag(BlockState blockstate, TagKey<Block>... keys) {
+		for (int i = 0;i < keys.length;i++ ) {
+			if (blockstate.is(keys[i]))
+				return keys[i];
+		}
+		return null;
+	}
+	
+	private String convertNameFromBlockTagKey(TagKey<Block> key) {
+		if (key == null)                                { return null; } else
+		if (key.equals(BlockTags.NEEDS_DIAMOND_TOOL))    { return "diamond"; } else
+		if (key.equals(BlockTags.NEEDS_IRON_TOOL))       { return "iron"; } else
+		if (key.equals(BlockTags.NEEDS_STONE_TOOL))      { return "stone"; } else
+		if (key.equals(BlockTags.MINEABLE_WITH_PICKAXE)) { return "pickaxe"; } else
+		if (key.equals(BlockTags.MINEABLE_WITH_AXE))     { return "axe"; } else
+		if (key.equals(BlockTags.MINEABLE_WITH_SHOVEL))  { return "shovel"; } else
+		if (key.equals(BlockTags.MINEABLE_WITH_HOE))     { return "hoe"; } else
+		if (key.equals(BlockTags.SWORD_EFFICIENT))       { return "sword"; } else {
+			return null;
 		}
 	}
 
