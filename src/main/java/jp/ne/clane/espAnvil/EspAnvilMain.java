@@ -6,20 +6,30 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import jp.ne.clane.commons.EffectUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.food.FoodProperties.PossibleEffect;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CompassItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SuspiciousStewItem;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.LodestoneTracker;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
+import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -78,6 +88,7 @@ public class EspAnvilMain {
 	public void ItemTooltipEvent(ItemTooltipEvent ev) {
 		Minecraft mcInst = getMC();
 		ItemStack items = ev.getItemStack();
+		Item item = items.getItem();
 		List<Component> tooltip = ev.getToolTip();
 		if (items.isRepairable() || (items.getComponents().get(DataComponents.STORED_ENCHANTMENTS) != null)) {
 			if (EspAnvilConfig.isShowAnvilCount) {
@@ -110,7 +121,7 @@ public class EspAnvilMain {
 			if (EspAnvilConfig.isShowFoodExtraInfo) {
 				StringBuilder optionValue = new StringBuilder();
 				String optionSeparater = Component.translatable("clane.mod.espAnvil.food.optionSeparater").getString();
-				float eatSeconds = items.getItem().getUseDuration(items, null); //ハチミツ入りの瓶がitemクラスの上書きで実装されている
+				float eatSeconds = item.getUseDuration(items, null); //ハチミツ入りの瓶がitemクラスの上書きで実装されている
 				if (eatSeconds < 32) {
 					optionValue.append(Component.translatable("clane.mod.espAnvil.food.fastfood").getString()).append(optionSeparater);
 				} else if (eatSeconds > 32) {
@@ -119,22 +130,20 @@ public class EspAnvilMain {
 				if (foodProp.canAlwaysEat()) {
 					optionValue.append(Component.translatable("clane.mod.espAnvil.food.alwayseat").getString()).append(optionSeparater);
 				}
+				if (item instanceof SuspiciousStewItem && !ev.getFlags().isCreative()) {
+		            for (SuspiciousStewEffects.Entry effectEntry : items.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY).effects()) {
+		            	optionValue.append(EffectUtils.getEffectDescribeText(effectEntry, optionSeparater));
+		            }
+				}
 				for ( PossibleEffect effect : foodProp.effects() ) {
-					MobEffectInstance effectIns = effect.effect();
-					int duratationSecond = effectIns.getDuration() / 20;
-					optionValue.append(effectIns.getEffect().value().getDisplayName().getString()).append(effectIns.getAmplifier() > 0 ? Component.translatable("enchantment.level." + (effectIns.getAmplifier() + 1)).getString() : "")
-						.append("(").append(String.format("%01d:%02d",(int)duratationSecond / 60,(int)duratationSecond % 60));
-					if (effect.probability() != 1.0f) {
-						optionValue.append(" - ").append(String.valueOf(Math.round(effect.probability() * 100))).append("%");
-					}
-					optionValue.append(")").append(optionSeparater);
+					optionValue.append(EffectUtils.getEffectDescribeText(effect, optionSeparater));
 				}
 				if (optionValue.length() > 0) {
 					tooltip.add(Component.literal(optionValue.delete(optionValue.length() - optionSeparater.length(), optionValue.length()).toString()));
 				}
 			}
-		} else if (items.getItem() instanceof BlockItem) {
-			Block block = ((BlockItem)items.getItem()).getBlock();;
+		} else if (item instanceof BlockItem) {
+			Block block = ((BlockItem)item).getBlock();;
 			if (EspAnvilConfig.isShowBlockDestroyTime) {
 				float destroyTime = block.defaultDestroyTime();
 				tooltip.add(Component.translatable("clane.mod.espAnvil.block.destroyTime", destroyTime == 0 ? Component.translatable("clane.mod.espAnvil.block.instantBreak") : destroyTime == -1 ? Component.translatable("clane.mod.espAnvil.block.unbreakable") : String.format("%.1f",destroyTime)));
@@ -159,6 +168,19 @@ public class EspAnvilMain {
 					optionValue.append(Component.translatable("clane.mod.espAnvil.block.requiredTier",Component.translatable("clane.mod.espAnvil.block.requiredTier." + convertNameFromBlockTagKey(tier)).getString()).getString());
 				}
 				tooltip.add(Component.literal(optionValue.toString()));
+			}
+			if (EspAnvilConfig.isShowBlockExtraInfo) {
+				if (block instanceof BeehiveBlock) {
+					BlockItemStateProperties state = items.get(DataComponents.BLOCK_STATE);
+					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.honelyLevel", (state != null ? state.get(BlockStateProperties.LEVEL_HONEY) : 0), BeehiveBlock.MAX_HONEY_LEVELS));
+					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.beeCount", items.get(DataComponents.BEES).size(), BeehiveBlockEntity.MAX_OCCUPANTS));
+				}
+			}
+		} else if (item instanceof CompassItem) {
+			LodestoneTracker tracker = items.get(DataComponents.LODESTONE_TRACKER);
+			if (tracker != null) {
+				GlobalPos gpos = tracker.target().get();
+				tooltip.add(Component.translatable("clane.mod.espAnvil.compass.target", Component.translatable(gpos.dimension().location().toLanguageKey()).getString(), gpos.pos().getX(), gpos.pos().getY(), gpos.pos().getZ()));
 			}
 		}
 	}
@@ -189,13 +211,13 @@ public class EspAnvilMain {
 	private void setup(final FMLCommonSetupEvent event) {
 		config = new EspAnvilConfig();
 		try {
-			config.loadConfig(EspAnvilConfig.getConfigFile());
+			config.loadConfig(config.getConfigFile());
 		} catch (IllegalAccessException | IOException e) {
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 		}
 		try {
-			config.saveConfig(EspAnvilConfig.getConfigFile());
+			config.saveConfig(config.getConfigFile());
 		} catch (IllegalAccessException | IOException e) {
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();

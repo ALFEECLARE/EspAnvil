@@ -3,13 +3,16 @@
   "clane.mod.espAnvil.itemDurability": "Durability : %s / %s",
   "clane.mod.espAnvil.nutrition": "Food Points : ",
   "clane.mod.espAnvil.saturation": "Saturation Restored : ",
+
   "clane.mod.espAnvil.hungerValueAdd": "+%s",
   "clane.mod.espAnvil.hungerValue.BeforeAfter": "(%s => %s)",
+
   "clane.mod.espAnvil.food.fastfood": "Fast Food",
   "clane.mod.espAnvil.food.slowfood": "Slow Food",
   "clane.mod.espAnvil.food.alwayseat": "Always Eat",
   "clane.mod.espAnvil.food.effectDuration": "%s:%s",
   "clane.mod.espAnvil.food.optionSeparater": "・",
+
   "clane.mod.espAnvil.block.lightLevel": "Light Level : %s",
   "clane.mod.espAnvil.block.destroyTime": "Hardness : %s",
   "clane.mod.espAnvil.block.instantBreak": "Instant Break",
@@ -27,5 +30,13 @@
   "clane.mod.espAnvil.block.requiredTier.diamond": "diamond",
   "clane.mod.espAnvil.block.requiredTier.iron": "iron",
   "clane.mod.espAnvil.block.requiredTier.stone": "stonr",
-  "clane.mod.espAnvil.block.requiredTier.wood": "wood"
+  "clane.mod.espAnvil.block.requiredTier.wood": "wood",
+  "clane.mod.espAnvil.block.beefiveBlock.honelyLevel": "Homey Level : %s / %s",
+  "clane.mod.espAnvil.block.beefiveBlock.beeCount": "Bees : %s / %s",
+
+  "clane.mod.espAnvil.compass.target": "Target : %s / %s , %s , %s",
+
+  "minecraft.overworld":"Overworld",
+  "minecraft.nether":"Nether",
+  "minecraft.end":"End"
 }

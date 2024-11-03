@@ -11,14 +11,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import jp.ne.clane.espAnvil.EspAnvilMain;
 import net.minecraft.client.Minecraft;
 
 public abstract class ConfigBase {
 	private Class<? extends ConfigBase> configClass = null;
+	private String modId = null;
 	
-	public ConfigBase(Class<? extends ConfigBase> conClass) {
+	public ConfigBase(Class<? extends ConfigBase> conClass, String modIdLocal) {
 		configClass = conClass;
+		modId = modIdLocal;
 	}
 	
 	public void saveConfig(File configFileName) throws IllegalAccessException, IOException {
@@ -55,8 +56,8 @@ public abstract class ConfigBase {
 		}
 	}
 	  
-	public static File getConfigFile() {
-		return getConfigFile(EspAnvilMain.MOD_ID);
+	public File getConfigFile() {
+		return getConfigFile(modId);
 	}
 
 	public static File getConfigFile(String saveFileName) {

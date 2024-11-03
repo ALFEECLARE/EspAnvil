@@ -14,8 +14,9 @@ public class EspAnvilConfig extends ConfigBase {
 	  public static boolean isShowExplosionResistance = true;
 	  public static boolean isShowCorrectTool = true;
 	  public static boolean isShowLightLevel = true;
+	  public static boolean isShowBlockExtraInfo = true;
 	  
 	  public EspAnvilConfig() {
-		  super(EspAnvilConfig.class);
+		  super(EspAnvilConfig.class, EspAnvilMain.MOD_ID);
 	  }
 }
