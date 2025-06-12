@@ -14,17 +14,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.food.FoodProperties.PossibleEffect;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SuspiciousStewItem;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
@@ -97,8 +98,8 @@ public class EspAnvilMain {
 			if (EspAnvilConfig.isShowItemDurability && !ev.getFlags().isAdvanced() && items.isRepairable()) {
 				tooltip.add(Component.translatable("clane.mod.espAnvil.itemDurability", items.getMaxDamage() - items.getDamageValue(), items.getMaxDamage()));
 			}
-		} else if (items.getFoodProperties(null) != null) {
-			FoodProperties foodProp = items.getFoodProperties(null);
+		} else if (items.get(DataComponents.FOOD) != null) {
+			FoodProperties foodProp = items.get(DataComponents.FOOD);
 			FoodData currentFoodData = mcInst.player.getFoodData();
 			int afterNutrationLevel = Math.min(20, currentFoodData.getFoodLevel() + foodProp.nutrition());
 			if (EspAnvilConfig.isShowNutrition) {
@@ -130,13 +131,28 @@ public class EspAnvilMain {
 				if (foodProp.canAlwaysEat()) {
 					optionValue.append(Component.translatable("clane.mod.espAnvil.food.alwayseat").getString()).append(optionSeparater);
 				}
-				if (item instanceof SuspiciousStewItem && !ev.getFlags().isCreative()) {
+				if (items.has(DataComponents.SUSPICIOUS_STEW_EFFECTS) && !ev.getFlags().isCreative()) {
 		            for (SuspiciousStewEffects.Entry effectEntry : items.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY).effects()) {
 		            	optionValue.append(EffectUtils.getEffectDescribeText(effectEntry, optionSeparater));
 		            }
 				}
-				for ( PossibleEffect effect : foodProp.effects() ) {
-					optionValue.append(EffectUtils.getEffectDescribeText(effect, optionSeparater));
+				for (ConsumeEffect consumeEffect : items.get(DataComponents.CONSUMABLE).onConsumeEffects() ) {
+					if (consumeEffect.getType() == ConsumeEffect.Type.APPLY_EFFECTS) {
+						ApplyStatusEffectsConsumeEffect applyStatusEffect = ((ApplyStatusEffectsConsumeEffect)consumeEffect);
+						for (MobEffectInstance mobEffect : applyStatusEffect.effects()) {
+							optionValue.append(EffectUtils.getEffectDescribeText(mobEffect, applyStatusEffect.probability(), optionSeparater));
+						}
+					} else if (consumeEffect.getType() == ConsumeEffect.Type.REMOVE_EFFECTS) {
+						//RemoveStatusEffectsConsumeEffect.effectsの不可視が解消できないのでスキップ。mixinするまでもなかろ。てかそもそもなんで不可視なんだコレ
+						//RemoveStatusEffectsConsumeEffect removeStatusEffect = ((RemoveStatusEffectsConsumeEffect)consumeEffect);
+						//for (Holder<MobEffect> mobEffect : removeStatusEffect.effects) {
+						//	
+						//}
+					} else if (consumeEffect.getType() == ConsumeEffect.Type.CLEAR_ALL_EFFECTS) {
+						optionValue.append(Component.translatable("clane.mod.espAnvil.food.clearEffect").getString()).append(optionSeparater);
+					} else if (consumeEffect.getType() == ConsumeEffect.Type.TELEPORT_RANDOMLY) {
+						optionValue.append(Component.translatable("clane.mod.espAnvil.food.randomTeleport").getString()).append(optionSeparater);
+					}
 				}
 				if (optionValue.length() > 0) {
 					tooltip.add(Component.literal(optionValue.delete(optionValue.length() - optionSeparater.length(), optionValue.length()).toString()));

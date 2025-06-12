@@ -10,6 +10,8 @@
   "clane.mod.espAnvil.food.fastfood": "Fast Food",
   "clane.mod.espAnvil.food.slowfood": "Slow Food",
   "clane.mod.espAnvil.food.alwayseat": "Always Eat",
+  "clane.mod.espAnvil.food.clearEffect": "Clear All Effects",
+  "clane.mod.espAnvil.food.randomTeleport": "Teleport Random Place",
   "clane.mod.espAnvil.food.effectDuration": "%s:%s",
   "clane.mod.espAnvil.food.optionSeparater": "・",
 

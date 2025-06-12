@@ -10,6 +10,8 @@
   "clane.mod.espAnvil.food.fastfood": "早食い",
   "clane.mod.espAnvil.food.slowfood": "粘性",
   "clane.mod.espAnvil.food.alwayseat": "別腹",
+  "clane.mod.espAnvil.food.clearEffect": "浄化",
+  "clane.mod.espAnvil.food.randomTeleport": "転移",
   "clane.mod.espAnvil.food.effectDuration": "%s:%s",
   "clane.mod.espAnvil.food.optionSeparater": "・",
 

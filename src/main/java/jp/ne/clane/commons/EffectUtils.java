@@ -2,7 +2,6 @@ package jp.ne.clane.commons;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.food.FoodProperties.PossibleEffect;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 
 public class EffectUtils {
@@ -11,16 +10,12 @@ public class EffectUtils {
 		return getEffectDescribeTextCore(effectEntry.createEffectInstance()).append(")").append(optionSeparater);
 	}
 
-	public static StringBuilder getEffectDescribeText(PossibleEffect effectIns, String optionSeparater) {
-		StringBuilder answer = getEffectDescribeTextCore(effectIns.effect());
-		if (effectIns.probability() != 1.0f) {
-			answer.append(" - ").append(String.valueOf(Math.round(effectIns.probability() * 100))).append("%");
+	public static StringBuilder getEffectDescribeText(MobEffectInstance effectIns, float effectProbability, String optionSeparater) {
+		StringBuilder answer = getEffectDescribeTextCore(effectIns);
+		if (effectProbability != 1.0f) {
+			answer.append(" - ").append(String.valueOf(Math.round(effectProbability * 100))).append("%");
 		}
 		return answer.append(")").append(optionSeparater);
-	}
-
-	public static StringBuilder getEffectDescribeText(MobEffectInstance effectIns, String optionSeparater) {
-		return getEffectDescribeTextCore(effectIns).append(")").append(optionSeparater);
 	}
 
 	//効果時間部分のかっこを閉じないので、呼び側で閉じて改行する。
