@@ -91,11 +91,11 @@ public class EspAnvilMain {
 		ItemStack items = ev.getItemStack();
 		Item item = items.getItem();
 		List<Component> tooltip = ev.getToolTip();
-		if (items.isRepairable() || (items.getComponents().get(DataComponents.STORED_ENCHANTMENTS) != null)) {
+		if (items.isCombineRepairable() || (items.getComponents().get(DataComponents.STORED_ENCHANTMENTS) != null)) {
 			if (EspAnvilConfig.isShowAnvilCount) {
 				tooltip.add(Component.translatable("clane.mod.espAnvil.anvilUseCount", Math.round(Math.log(items.getOrDefault(DataComponents.REPAIR_COST, Integer.valueOf(0)) + 1) / Math.log(2))));
 			}
-			if (EspAnvilConfig.isShowItemDurability && !ev.getFlags().isAdvanced() && items.isRepairable()) {
+			if (EspAnvilConfig.isShowItemDurability && !ev.getFlags().isAdvanced() && items.isCombineRepairable()) {
 				tooltip.add(Component.translatable("clane.mod.espAnvil.itemDurability", items.getMaxDamage() - items.getDamageValue(), items.getMaxDamage()));
 			}
 		} else if (items.get(DataComponents.FOOD) != null) {
