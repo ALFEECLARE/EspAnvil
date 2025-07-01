@@ -21,16 +21,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
-import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -186,11 +182,7 @@ public class EspAnvilMain {
 				tooltip.add(Component.literal(optionValue.toString()));
 			}
 			if (EspAnvilConfig.isShowBlockExtraInfo) {
-				if (block instanceof BeehiveBlock) {
-					BlockItemStateProperties state = items.get(DataComponents.BLOCK_STATE);
-					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.honelyLevel", (state != null ? state.get(BlockStateProperties.LEVEL_HONEY) : 0), BeehiveBlock.MAX_HONEY_LEVELS));
-					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.beeCount", items.get(DataComponents.BEES).size(), BeehiveBlockEntity.MAX_OCCUPANTS));
-				}
+				//適宜追加
 			}
 		} else if (item instanceof CompassItem) {
 			LodestoneTracker tracker = items.get(DataComponents.LODESTONE_TRACKER);
