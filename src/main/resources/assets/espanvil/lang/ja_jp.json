@@ -3,14 +3,40 @@
   "clane.mod.espAnvil.itemDurability": "耐久値 : %s / %s",
   "clane.mod.espAnvil.nutrition": "満腹度 : ",
   "clane.mod.espAnvil.saturation": "隠し満腹度 : ",
+
   "clane.mod.espAnvil.hungerValueAdd": "+%s",
   "clane.mod.espAnvil.hungerValue.BeforeAfter": "(%s => %s)",
+
   "clane.mod.espAnvil.food.fastfood": "早食い",
+  "clane.mod.espAnvil.food.slowfood": "粘性",
   "clane.mod.espAnvil.food.alwayseat": "別腹",
+  "clane.mod.espAnvil.food.effectDuration": "%s:%s",
   "clane.mod.espAnvil.food.optionSeparater": "・",
+
   "clane.mod.espAnvil.block.lightLevel": "光源レベル : %s",
   "clane.mod.espAnvil.block.destroyTime": "硬度 : %s",
   "clane.mod.espAnvil.block.instantBreak": "即時破壊",
   "clane.mod.espAnvil.block.unbreakable": "破壊不能",
-  "clane.mod.espAnvil.block.explosionResistance": "爆発耐性 : %s"
+  "clane.mod.espAnvil.block.explosionResistance": "爆発耐性 : %s",
+  "clane.mod.espAnvil.block.requiredTool": "適正ツール : %s",
+  "clane.mod.espAnvil.block.requiredTool.pickaxe": "ツルハシ",
+  "clane.mod.espAnvil.block.requiredTool.axe": "斧",
+  "clane.mod.espAnvil.block.requiredTool.shovel": "シャベル",
+  "clane.mod.espAnvil.block.requiredTool.hoe": "クワ",
+  "clane.mod.espAnvil.block.requiredTool.sword": "剣",
+  "clane.mod.espAnvil.block.requiredTool.null": "なし",
+  "clane.mod.espAnvil.block.requiredTier": "(%s以上)",
+  "clane.mod.espAnvil.block.requiredTier.netherite": "ネザライト",
+  "clane.mod.espAnvil.block.requiredTier.diamond": "ダイアモンド",
+  "clane.mod.espAnvil.block.requiredTier.iron": "鉄",
+  "clane.mod.espAnvil.block.requiredTier.stone": "石",
+  "clane.mod.espAnvil.block.requiredTier.wood": "木",
+  "clane.mod.espAnvil.block.beefiveBlock.honeyLevel": "ハチミツ : %s / %s",
+  "clane.mod.espAnvil.block.beefiveBlock.beeCount": "ハチ : %s / %s",
+
+  "clane.mod.espAnvil.compass.target": "示針先 : %s / %s , %s , %s",
+  
+  "minecraft.overworld":"オーバーワールド",
+  "minecraft.nether":"ネザー",
+  "minecraft.end":"エンド"
 }
