@@ -31,7 +31,7 @@
   "clane.mod.espAnvil.block.requiredTier.iron": "鉄",
   "clane.mod.espAnvil.block.requiredTier.stone": "石",
   "clane.mod.espAnvil.block.requiredTier.wood": "木",
-  "clane.mod.espAnvil.block.beefiveBlock.honelyLevel": "ハチミツ : %s / %s",
+  "clane.mod.espAnvil.block.beefiveBlock.honeyLevel": "ハチミツ : %s / %s",
   "clane.mod.espAnvil.block.beefiveBlock.beeCount": "ハチ : %s / %s",
 
   "clane.mod.espAnvil.compass.target": "示針先 : %s / %s , %s , %s",
