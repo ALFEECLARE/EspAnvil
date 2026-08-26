@@ -132,22 +132,24 @@ public class EspAnvilMain {
 		            	optionValue.append(EffectUtils.getEffectDescribeText(effectEntry, optionSeparater));
 		            }
 				}
-				for (ConsumeEffect consumeEffect : items.get(DataComponents.CONSUMABLE).onConsumeEffects() ) {
-					if (consumeEffect.getType() == ConsumeEffect.Type.APPLY_EFFECTS) {
-						ApplyStatusEffectsConsumeEffect applyStatusEffect = ((ApplyStatusEffectsConsumeEffect)consumeEffect);
-						for (MobEffectInstance mobEffect : applyStatusEffect.effects()) {
-							optionValue.append(EffectUtils.getEffectDescribeText(mobEffect, applyStatusEffect.probability(), optionSeparater));
+				if (items.get(DataComponents.CONSUMABLE) != null) {
+					for (ConsumeEffect consumeEffect : items.get(DataComponents.CONSUMABLE).onConsumeEffects() ) {
+						if (consumeEffect.getType() == ConsumeEffect.Type.APPLY_EFFECTS) {
+							ApplyStatusEffectsConsumeEffect applyStatusEffect = ((ApplyStatusEffectsConsumeEffect)consumeEffect);
+							for (MobEffectInstance mobEffect : applyStatusEffect.effects()) {
+								optionValue.append(EffectUtils.getEffectDescribeText(mobEffect, applyStatusEffect.probability(), optionSeparater));
+							}
+						} else if (consumeEffect.getType() == ConsumeEffect.Type.REMOVE_EFFECTS) {
+							//RemoveStatusEffectsConsumeEffect.effectsの不可視が解消できないのでスキップ。mixinするまでもなかろ。てかそもそもなんで不可視なんだコレ
+							//RemoveStatusEffectsConsumeEffect removeStatusEffect = ((RemoveStatusEffectsConsumeEffect)consumeEffect);
+							//for (MobEffect mobEffect : removeStatusEffect.effects) {
+							//	
+							//}
+						} else if (consumeEffect.getType() == ConsumeEffect.Type.CLEAR_ALL_EFFECTS) {
+							optionValue.append(Component.translatable("clane.mod.espAnvil.food.clearEffect").getString()).append(optionSeparater);
+						} else if (consumeEffect.getType() == ConsumeEffect.Type.TELEPORT_RANDOMLY) {
+							optionValue.append(Component.translatable("clane.mod.espAnvil.food.randomTeleport").getString()).append(optionSeparater);
 						}
-					} else if (consumeEffect.getType() == ConsumeEffect.Type.REMOVE_EFFECTS) {
-						//RemoveStatusEffectsConsumeEffect.effectsの不可視が解消できないのでスキップ。mixinするまでもなかろ。てかそもそもなんで不可視なんだコレ
-						//RemoveStatusEffectsConsumeEffect removeStatusEffect = ((RemoveStatusEffectsConsumeEffect)consumeEffect);
-						//for (Holder<MobEffect> mobEffect : removeStatusEffect.effects) {
-						//	
-						//}
-					} else if (consumeEffect.getType() == ConsumeEffect.Type.CLEAR_ALL_EFFECTS) {
-						optionValue.append(Component.translatable("clane.mod.espAnvil.food.clearEffect").getString()).append(optionSeparater);
-					} else if (consumeEffect.getType() == ConsumeEffect.Type.TELEPORT_RANDOMLY) {
-						optionValue.append(Component.translatable("clane.mod.espAnvil.food.randomTeleport").getString()).append(optionSeparater);
 					}
 				}
 				if (optionValue.length() > 0) {
@@ -188,7 +190,7 @@ public class EspAnvilMain {
 			LodestoneTracker tracker = items.get(DataComponents.LODESTONE_TRACKER);
 			if (tracker != null) {
 				GlobalPos gpos = tracker.target().get();
-				tooltip.add(Component.translatable("clane.mod.espAnvil.compass.target", Component.translatable(gpos.dimension().location().toLanguageKey()).getString(), gpos.pos().getX(), gpos.pos().getY(), gpos.pos().getZ()));
+				tooltip.add(Component.translatable("clane.mod.espAnvil.compass.target", Component.translatable(gpos.dimension().identifier().toLanguageKey()).getString(), gpos.pos().getX(), gpos.pos().getY(), gpos.pos().getZ()));
 			}
 		}
 	}
