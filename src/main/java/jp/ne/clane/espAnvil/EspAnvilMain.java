@@ -188,7 +188,7 @@ public class EspAnvilMain {
 			if (EspAnvilConfig.isShowBlockExtraInfo) {
 				if (block instanceof BeehiveBlock) {
 					BlockItemStateProperties state = items.get(DataComponents.BLOCK_STATE);
-					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.honelyLevel", (state != null ? state.get(BlockStateProperties.LEVEL_HONEY) : 0), BeehiveBlock.MAX_HONEY_LEVELS));
+					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.honeyLevel", (state != null ? state.get(BlockStateProperties.LEVEL_HONEY) : 0), BeehiveBlock.MAX_HONEY_LEVELS));
 					tooltip.add(Component.translatable("clane.mod.espAnvil.block.beefiveBlock.beeCount", items.get(DataComponents.BEES).size(), BeehiveBlockEntity.MAX_OCCUPANTS));
 				}
 			}
