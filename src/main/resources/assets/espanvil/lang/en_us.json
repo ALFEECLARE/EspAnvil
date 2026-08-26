@@ -33,7 +33,7 @@
   "clane.mod.espAnvil.block.requiredTier.iron": "iron",
   "clane.mod.espAnvil.block.requiredTier.stone": "stonr",
   "clane.mod.espAnvil.block.requiredTier.wood": "wood",
-  "clane.mod.espAnvil.block.beefiveBlock.honelyLevel": "Homey Level : %s / %s",
+  "clane.mod.espAnvil.block.beefiveBlock.honeyLevel": "Honey Level : %s / %s",
   "clane.mod.espAnvil.block.beefiveBlock.beeCount": "Bees : %s / %s",
 
   "clane.mod.espAnvil.compass.target": "Target : %s / %s , %s , %s",
